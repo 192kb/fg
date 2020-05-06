@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>
+            files | 192kb.ru
+        </title>
+        <link rel='stylesheet' href='stylesheets/style.css'/>
+        <script src="javascripts/dropzone.min.js"></script>
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    </head>
+    <body>
+        <form
+            action="/upload/"
+            class="dropzone"
+            method="post"
+            enctype="multipart/form-data">
+            <div class="dz-message">
+                <img
+                    src="images/cloud.svg"
+                    alt="Секундомер Файлохламилища"
+                    width="200"
+                    height="200"/><br>
+                Drop your files here
+            </div>
+            <div class="fallback">
+                <input name="displayImage" type="file" multiple/>
+                <input type="submit"/>
+            </div>
+        </form>
+        <h3>HTML code</h3>
+        <code class="code" id="h_code"></code>
+        <h3>URL</h3>
+        <code class="code" id="l_code"></code>
+        <script src="javascripts/fg.js"></script>
+    </body>
+</html>
