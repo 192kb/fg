@@ -6,7 +6,7 @@ router.get("/", function (req, res, next) {
   res.render("/public/index.html", { title: "files" });
 });
 var upload = multer({
-  dest: "../../html/uploads/",
+  dest: "../html/uploads/",
   limits: {
     files: 250,
     fileSize: 1 * 1024 * 1024 * 1024,
