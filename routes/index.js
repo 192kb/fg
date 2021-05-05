@@ -12,7 +12,7 @@ var upload = multer({
     fileSize: 1 * 1024 * 1024 * 1024,
   },
 });
-router.post("/files/upload/", upload.any(), function (req, res) {
+router.post("/upload/", upload.any(), function (req, res) {
   var path = req.files[0].path;
   var pathNew = path + "_" + req.files[0].originalname;
 
