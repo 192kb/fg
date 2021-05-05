@@ -7,7 +7,6 @@ var app = express();
 console.info("files app working dir", __dirname);
 app.use(favicon(__dirname + "/public/favicon.ico"));
 app.set("view engine", "html");
-app.set("views", __dirname);
 app.engine("html", require("ejs").renderFile);
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/", routes);
@@ -20,10 +19,7 @@ app.use(function (req, res, next) {
 
 app.use(function (err, req, res, next) {
   res.status(err.status || 500);
-  res.render("error", {
-    message: err.message,
-    error: err,
-  });
+  res.send(err);
 });
 
 var server = app.listen(4000, function () {
