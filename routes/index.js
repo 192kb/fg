@@ -4,6 +4,10 @@ var express = require("express"),
   path = require("path"),
   router = express.Router();
 
+// Define a single, absolute upload root and resolve any symlinks.
+var uploadRoot = path.resolve(__dirname, "../html/uploads/");
+var resolvedUploadRoot = fs.realpathSync(uploadRoot);
+
 var RateLimit = require("express-rate-limit");
 
 var uploadLimiter = RateLimit({
@@ -15,17 +19,17 @@ router.get("/", function (req, res, next) {
   res.render("/public/index.html", { title: "files" });
 });
 var upload = multer({
-  dest: "../html/uploads/",
+  // Use the resolved upload root as the Multer destination
+  dest: resolvedUploadRoot,
   limits: {
     files: 250,
     fileSize: 1 * 1024 * 1024 * 1024,
   },
 });
 router.post("/upload/", uploadLimiter, upload.any(), function (req, res) {
-  var uploadRoot = "../html/uploads/";
   var tempPath = req.files[0].path;
-  var resolvedUploadRoot = path.resolve(uploadRoot);
-  var resolvedTempPath = path.resolve(tempPath);
+  // Resolve the temporary path to an absolute, symlink-free path
+  var resolvedTempPath = fs.realpathSync(path.resolve(tempPath));
 
   // Ensure that the temporary upload path is actually within the intended upload root
   if (resolvedTempPath !== resolvedUploadRoot && !resolvedTempPath.startsWith(resolvedUploadRoot + path.sep)) {
@@ -38,7 +42,7 @@ router.post("/upload/", uploadLimiter, upload.any(), function (req, res) {
 
   var tempName = path.basename(resolvedTempPath);
   var safeOriginalName = path.basename(req.files[0].originalname || "");
-  var safeNewPath = path.join(uploadRoot, tempName + "_" + safeOriginalName);
+  var safeNewPath = path.join(resolvedUploadRoot, tempName + "_" + safeOriginalName);
 
   fs.rename(resolvedTempPath, safeNewPath, function (err) {
     if (err) {
