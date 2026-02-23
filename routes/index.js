@@ -29,12 +29,19 @@ router.post("/upload/", uploadLimiter, upload.any(), function (req, res) {
   var safeNewPath = path.join(uploadRoot, tempName + "_" + safeOriginalName);
 
   fs.rename(tempPath, safeNewPath, function (err) {
-    if (err) throw err;
-  });
+    if (err) {
+      console.error("Error moving uploaded file from %s to %s: %s", tempPath, safeNewPath, err && err.message ? err.message : err);
+      if (!res.headersSent) {
+        res.status(500);
+        res.end();
+      }
+      return;
+    }
 
-  res.type("json");
-  const link = safeNewPath.replace("../html/", "");
-  res.json({ link, type: req.files[0].mimetype });
-  res.end();
+    res.type("json");
+    const link = safeNewPath.replace("../html/", "");
+    res.json({ link, type: req.files[0].mimetype });
+    res.end();
+  });
 });
 module.exports = router;
