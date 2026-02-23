@@ -3,6 +3,14 @@ var express = require("express"),
   fs = require("fs"),
   path = require("path"),
   router = express.Router();
+
+var RateLimit = require("express-rate-limit");
+
+var uploadLimiter = RateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 upload requests per windowMs
+});
+
 router.get("/", function (req, res, next) {
   res.render("/public/index.html", { title: "files" });
 });
@@ -13,7 +21,7 @@ var upload = multer({
     fileSize: 1 * 1024 * 1024 * 1024,
   },
 });
-router.post("/upload/", upload.any(), function (req, res) {
+router.post("/upload/", uploadLimiter, upload.any(), function (req, res) {
   var uploadRoot = "../html/uploads/";
   var tempPath = req.files[0].path;
   var tempName = path.basename(tempPath);
