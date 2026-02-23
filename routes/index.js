@@ -3,6 +3,14 @@ var express = require("express"),
   fs = require("fs"),
   path = require("path"),
   router = express.Router();
+
+var RateLimit = require("express-rate-limit");
+
+var uploadLimiter = RateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 upload requests per windowMs
+});
+
 router.get("/", function (req, res, next) {
   res.render("/public/index.html", { title: "files" });
 });
@@ -13,7 +21,7 @@ var upload = multer({
     fileSize: 1 * 1024 * 1024 * 1024,
   },
 });
-router.post("/upload/", upload.any(), function (req, res) {
+router.post("/upload/", uploadLimiter, upload.any(), function (req, res) {
   var uploadRoot = "../html/uploads/";
   var tempPath = req.files[0].path;
   var tempName = path.basename(tempPath);
@@ -21,12 +29,19 @@ router.post("/upload/", upload.any(), function (req, res) {
   var safeNewPath = path.join(uploadRoot, tempName + "_" + safeOriginalName);
 
   fs.rename(tempPath, safeNewPath, function (err) {
-    if (err) throw err;
-  });
+    if (err) {
+      console.error("Error moving uploaded file from %s to %s: %s", tempPath, safeNewPath, err && err.message ? err.message : err);
+      if (!res.headersSent) {
+        res.status(500);
+        res.end();
+      }
+      return;
+    }
 
-  res.type("json");
-  const link = safeNewPath.replace("../html/", "");
-  res.json({ link, type: req.files[0].mimetype });
-  res.end();
+    res.type("json");
+    const link = safeNewPath.replace("../html/", "");
+    res.json({ link, type: req.files[0].mimetype });
+    res.end();
+  });
 });
 module.exports = router;
